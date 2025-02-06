@@ -1,0 +1,212 @@
+package Adventure;
+
+import Entities.Hero;
+import Entities.NPC;
+import Entities.Vendor;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.Scanner;
+
+public class Labyrinth {
+    private final Hero hero;
+    private final Scanner scanner;
+    private final Random random;
+    private final Vendor vendor;
+    private final ArrayList<String> locations = new ArrayList<>();
+    private final ArrayList<NPC> normalEnemies = new ArrayList<>();
+    private final ArrayList<NPC> miniBosses = new ArrayList<>();
+
+    private int currentLocationIndex = 0;
+
+    public Labyrinth(Hero hero) {
+        this.hero = hero;
+        this.scanner = new Scanner(System.in);
+        this.random = new Random();
+        this.vendor = new Vendor();
+        initializeLocations();
+        initializeEnemies();
+    }
+
+    private void initializeLocations() {
+        locations.add("The Shire 🌿");
+        locations.add("Bree 🏡");
+        locations.add("Chetwood 🌲");
+        locations.add("Weathertop 🏔️");
+        locations.add("Rivendell 🏰");
+        locations.add("Goblin Caves 🏚️");
+        locations.add("Mines of Moria ⚒️");
+        locations.add("Rohan 🏇");
+        locations.add("Fangorn Forest 🌲");
+        locations.add("Helm’s Deep 🏰");
+        locations.add("Isengard 🏰");
+        locations.add("Minas Morgul 🏰");
+        locations.add("Cirith Ungol 🕷️");
+        locations.add("Black Gate 🚪");
+        locations.add("Plains of Gorgoroth 🔥");
+        locations.add("Dark Tower of Barad-dûr ⚫");
+    }
+
+    private void initializeEnemies() {
+        // Normal enemies (Random Encounters)
+        normalEnemies.add(new NPC("Orc Warrior", 35, 8, 15));
+        normalEnemies.add(new NPC("Goblin Scout", 30, 5, 10));
+        normalEnemies.add(new NPC("Uruk-hai", 45, 12, 20));
+        normalEnemies.add(new NPC("Haradrim Soldier", 35, 10, 18));
+        normalEnemies.add(new NPC("Warg Rider", 50, 14, 22));
+
+        // Mini-Bosses (Fixed at Locations)
+        miniBosses.add(new NPC("Nazgûl 👁️", 80, 18, 40)); // Weathertop
+        miniBosses.add(new NPC("Balrog 🔥", 150, 30, 100)); // Moria
+        miniBosses.add(new NPC("Gríma Wormtongue 🐍", 70, 15, 50)); // Rohan
+        miniBosses.add(new NPC("Saruman 🧙‍♂️", 120, 28, 150)); // Isengard
+        miniBosses.add(new NPC("Shelob 🕷️", 160, 35, 200)); // Cirith Ungol
+        miniBosses.add(new NPC("Witch-king of Angmar 👑", 200, 40, 250)); // Black Gate
+    }
+
+
+    private void finalBossBattle() {
+        System.out.println("\n🔥 The fires of **Mount Doom** crackle around you...");
+        System.out.println("⚫ **The Dark Tower of Barad-dûr looms above...**");
+        System.out.println("🔥👁️🔥 **Sauron, the Dark Lord, stands before you!**");
+
+        NPC sauron = new NPC("Sauron ⚫", 300, 50, 1000);
+        battle(sauron);
+
+        if (hero.getHp() > 0) {
+            System.out.println("\n🏆 " + hero.getName() + " has **defeated** Sauron!");
+            System.out.println("👑 **Middle-earth is free once more!**");
+            System.out.println("🌅 You leave Mordor, forever remembered as a legend.");
+            System.out.println("🎭 Thank you for playing!");
+            System.exit(0);
+        } else {
+            System.out.println("☠️ " + hero.getName() + " was slain... Middle-earth falls into darkness...");
+            System.exit(0);
+        }
+    }
+
+
+    public void start() {
+        System.out.println("🏰 " + hero.getName() + " embarks on a journey through Middle-earth...");
+        navigateLocation();
+    }
+
+    private void navigateLocation() {
+        System.out.println("\n🛑 **Arriving at " + locations.get(currentLocationIndex) + "**");
+
+        if (currentLocationIndex == 15) {
+            finalBossBattle(); // Sauron appears when reaching Barad-dûr
+            return;
+        }
+
+        // Mini-Boss fights at specific locations
+        if (miniBosses.size() > 0 && (currentLocationIndex == 3 || currentLocationIndex == 6 || currentLocationIndex == 8 || currentLocationIndex == 10 || currentLocationIndex == 12 || currentLocationIndex == 14)) {
+            encounterMiniBoss();
+        } else {
+            encounterEnemy(); // Normal encounter if no mini-boss
+        }
+
+        // Present path choices
+        choosePath();
+    }
+
+    private void encounterEnemy() {
+        // Select a random enemy from the normal enemies list
+        NPC enemy = normalEnemies.get(random.nextInt(normalEnemies.size()));
+        System.out.println("⚔️ An enemy appears! " + enemy.getName() + " is blocking your path!");
+        System.out.println("💀 " + enemy.getName() + " (HP: " + enemy.getHp() + ", Strength: " + enemy.getStrength() + ")");
+
+        // Start battle with the chosen enemy
+        battle(enemy);
+    }
+
+    private void encounterMiniBoss() {
+        if (miniBosses.isEmpty()) {
+            System.out.println("🤷 No mini-boss remains... This path is empty.");
+            return;
+        }
+
+        // Get the next mini-boss in order
+        NPC miniBoss = miniBosses.remove(0);
+        System.out.println("👹 A **Mini-Boss** appears: " + miniBoss.getName() + "!");
+        System.out.println("💀 " + miniBoss.getName() + " (HP: " + miniBoss.getHp() + ", Strength: " + miniBoss.getStrength() + ")");
+
+        // Start battle with the mini-boss
+        battle(miniBoss);
+    }
+
+    private void battle(NPC enemy) {
+        while (hero.getHp() > 0 && enemy.getHp() > 0) {
+            System.out.println("\n🔥 Choose your action:");
+            System.out.println("[1] Normal Attack");
+            System.out.println("[2] Special Attack (One-time per fight)");
+            System.out.println("[3] Use a Combat Consumable");
+            System.out.println("[4] Attempt to Flee 🏃💨");
+            System.out.print("Your choice: ");
+            int choice = scanner.nextInt();
+
+            switch (choice) {
+                case 1 -> {
+                    int damage = hero.getStrength();
+                    enemy.takeDamage(damage);
+                    System.out.println("🗡️ " + hero.getName() + " attacks for " + damage + " damage!");
+                }
+                case 2 -> {
+                    int damage = hero.getStrength() * 2;
+                    enemy.takeDamage(damage);
+                    System.out.println("💥 " + hero.getName() + " unleashes a Special Attack for " + damage + " damage!");
+                }
+                case 3 -> {
+                    System.out.println("🎒 No consumables implemented yet!");
+                }
+                case 4 -> {
+                    if (attemptFlee(enemy)) return; // If successful, hero escapes
+                }
+                default -> {
+                    System.out.println("❌ Invalid choice. Try again.");
+                    continue;
+                }
+            }
+
+            if (!enemy.isDefeated()) {
+                int enemyDamage = enemy.getStrength();
+                hero.setHp(hero.getHp() - enemyDamage);
+                System.out.println("💀 " + enemy.getName() + " strikes back for " + enemyDamage + " damage!");
+            }
+        }
+
+        if (hero.getHp() > 0) {
+            System.out.println("🏆 " + hero.getName() + " has defeated " + enemy.getName() + "!");
+        } else {
+            System.out.println("☠️ " + hero.getName() + " has fallen...");
+            System.exit(0);
+        }
+    }
+
+    private boolean attemptFlee(NPC enemy) {
+        System.out.println("🏃💨 " + hero.getName() + " tries to flee...");
+        boolean canFlee = random.nextBoolean(); // 50% chance to succeed
+
+        if (canFlee) {
+            System.out.println("✅ Success! " + hero.getName() + " escapes to the next location!");
+            navigateLocation(); // Moves to the next location
+            return true;
+        } else {
+            System.out.println("❌ Failed! " + enemy.getName() + " lands a free attack!");
+            int enemyDamage = enemy.getStrength();
+            hero.setHp(hero.getHp() - enemyDamage);
+            System.out.println("💀 " + enemy.getName() + " hits for " + enemyDamage + " damage!");
+            return false;
+        }
+    }
+
+    private void choosePath() {
+        System.out.println("\n🏹 Choose your next action:");
+        System.out.println("[1] Take the safer route (More encounters, but easier)");
+        System.out.println("[2] Take the dangerous shortcut (Fewer encounters, but stronger enemies)");
+        System.out.print("Your choice: ");
+
+        int choice = scanner.nextInt();
+        currentLocationIndex += (choice == 1) ? 1 : 2;
+        navigateLocation();
+    }
+}

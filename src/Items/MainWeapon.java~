@@ -1,0 +1,31 @@
+package Items;
+
+public class MainWeapon {
+    private final String name;
+    private final String type; // "sword", "bow", "staff"
+    private final int attackPower;
+    private final String specialEffect;
+
+    public MainWeapon(String name, String type, int attackPower, String specialEffect) {
+        this.name = name;
+        this.type = type;
+        this.attackPower = attackPower;
+        this.specialEffect = specialEffect;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public int getAttackPower() {
+        return attackPower;
+    }
+
+    public String getSpecialEffect() {
+        return specialEffect;
+    }
+}

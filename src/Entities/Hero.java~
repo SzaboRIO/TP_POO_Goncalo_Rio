@@ -1,0 +1,85 @@
+package Entities;
+
+import java.util.ArrayList;
+import Items.Consumable;
+import Items.MainWeapon;
+
+public abstract class Hero extends Entity {
+    protected int level;
+    protected int gold;
+    protected MainWeapon mainWeapon;
+    protected ArrayList<Consumable> inventory;
+
+    public Hero(String name, int maxHp, int strength, int gold, MainWeapon mainWeapon) {
+        super(name, maxHp, strength);
+        this.level = 1; // Starts at level 1
+        this.gold = gold;
+        this.mainWeapon = mainWeapon;
+        this.inventory = new ArrayList<>();
+    }
+
+    @Override
+    public void showDetails() {
+        super.showDetails();
+        System.out.println("🎖️ Level: " + level);
+        System.out.println("💰 Gold: " + gold + " 🪙");
+        System.out.println("🗡️ Main Weapon: " + (mainWeapon != null ? mainWeapon.getName() : "None"));
+        System.out.println("🎒 Inventory: " + (inventory.isEmpty() ? "Empty" : inventory.size() + " items"));
+        System.out.println("----------------------");
+    }
+
+    // Inventory management
+    public void addItem(Consumable item) {
+        inventory.add(item);
+        System.out.println("🎒 " + name + " added " + item.getName() + " to inventory!");
+    }
+
+    public void removeItem(Consumable item) {
+        inventory.remove(item);
+        System.out.println("❌ " + name + " removed " + item.getName() + " from inventory!");
+    }
+
+    // Gold management
+    public int getGold() {
+        return gold;
+    }
+
+    public void addGold(int amount) {
+        this.gold += amount;
+        System.out.println("🪙 " + name + " gained " + amount + " coins!");
+    }
+
+    public void spendGold(int amount) {
+        if (amount <= this.gold) {
+            this.gold -= amount;
+            System.out.println("💰 " + name + " spent " + amount + " 🪙.");
+        } else {
+            System.out.println("❌ Not enough gold! (💰 " + name + " has only " + gold + " 🪙)");
+        }
+    }
+
+    public void useConsumable(String itemName) {
+        for (Consumable item : inventory.getConsumables()) {
+            if (item.getName().equalsIgnoreCase(itemName)) {
+                switch (item.getEffectType()) {
+                    case "heal":
+                        hp += item.getEffectValue();
+                        System.out.println("💖 You used " + item.getName() + " and restored " + item.getEffectValue() + " HP!");
+                        break;
+                    case "strBoost":
+                        strength += item.getEffectValue();
+                        System.out.println("💪 You used " + item.getName() + " and gained " + item.getEffectValue() + " Strength!");
+                        break;
+                    case "hpBoost":
+                        maxHp += item.getEffectValue();
+                        System.out.println("🩸 You used " + item.getName() + " and increased max HP by " + item.getEffectValue() + "!");
+                        break;
+                }
+                inventory.removeConsumable(item);
+                return;
+            }
+        }
+        System.out.println("❌ You don’t have that item!");
+    }
+
+}
