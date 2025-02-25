@@ -1,85 +1,146 @@
 package Entities;
 
-import java.util.ArrayList;
+import Items.CombatConsumable;
 import Items.Consumable;
+import Items.Item;
 import Items.MainWeapon;
+import java.util.ArrayList;
+import java.util.List;
 
-public abstract class Hero extends Entity {
-    protected int level;
+public abstract class Hero {
+    protected String name;
+    protected int maxHp;
+    protected int hp;
+    protected int strength;
     protected int gold;
     protected MainWeapon mainWeapon;
-    protected ArrayList<Consumable> inventory;
+    protected ArrayList<Item> inventory;
+    protected ArrayList<Item> boughtItems;
 
-    public Hero(String name, int maxHp, int strength, int gold, MainWeapon mainWeapon) {
-        super(name, maxHp, strength);
-        this.level = 1; // Starts at level 1
+    public Hero(String name, int hp, int strength, int gold, MainWeapon weapon) {
+        this.name = name;
+        this.maxHp = hp;
+        this.hp = hp;
+        this.strength = strength;
         this.gold = gold;
-        this.mainWeapon = mainWeapon;
+        this.mainWeapon = weapon;
         this.inventory = new ArrayList<>();
+        this.boughtItems = new ArrayList<>();
     }
 
-    @Override
-    public void showDetails() {
-        super.showDetails();
-        System.out.println("🎖️ Level: " + level);
-        System.out.println("💰 Gold: " + gold + " 🪙");
-        System.out.println("🗡️ Main Weapon: " + (mainWeapon != null ? mainWeapon.getName() : "None"));
-        System.out.println("🎒 Inventory: " + (inventory.isEmpty() ? "Empty" : inventory.size() + " items"));
-        System.out.println("----------------------");
+    public String getName() {
+        return name;
     }
 
-    // Inventory management
-    public void addItem(Consumable item) {
-        inventory.add(item);
-        System.out.println("🎒 " + name + " added " + item.getName() + " to inventory!");
+    public int getHp() {
+        return hp;
     }
 
-    public void removeItem(Consumable item) {
-        inventory.remove(item);
-        System.out.println("❌ " + name + " removed " + item.getName() + " from inventory!");
+    public MainWeapon getMainWeapon() {
+        return mainWeapon;
     }
 
-    // Gold management
-    public int getGold() {
+    public void setMainWeapon(MainWeapon weapon) {
+        this.mainWeapon = weapon;
+    }
+
+    public int getMaxHp() {
+        return maxHp;
+    }
+
+    public void setMaxHp(int maxHp) {
+        this.maxHp = maxHp;
+    }
+
+    public void setHp(int hp) {
+        this.hp = hp;
+    }
+
+    public void setStrength(int strength) {
+        this.strength = strength;
+    }
+
+    public boolean hasConsumables() {
+        return !inventory.isEmpty();
+    }
+
+    public boolean hasCombatConsumables() {
+        for (Item item : inventory) {
+            if (item instanceof CombatConsumable) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int getStrength() {
+        return strength;
+    }
+
+    public int getMoney() {
         return gold;
     }
 
-    public void addGold(int amount) {
-        this.gold += amount;
-        System.out.println("🪙 " + name + " gained " + amount + " coins!");
+    public void setMoney(int gold) {
+        this.gold = gold;
     }
 
-    public void spendGold(int amount) {
-        if (amount <= this.gold) {
-            this.gold -= amount;
-            System.out.println("💰 " + name + " spent " + amount + " 🪙.");
-        } else {
-            System.out.println("❌ Not enough gold! (💰 " + name + " has only " + gold + " 🪙)");
-        }
+    public ArrayList<Item> getInventory() {
+        return inventory;
     }
 
-    public void useConsumable(String itemName) {
-        for (Consumable item : inventory.getConsumables()) {
-            if (item.getName().equalsIgnoreCase(itemName)) {
-                switch (item.getEffectType()) {
-                    case "heal":
-                        hp += item.getEffectValue();
-                        System.out.println("💖 You used " + item.getName() + " and restored " + item.getEffectValue() + " HP!");
-                        break;
-                    case "strBoost":
-                        strength += item.getEffectValue();
-                        System.out.println("💪 You used " + item.getName() + " and gained " + item.getEffectValue() + " Strength!");
-                        break;
-                    case "hpBoost":
-                        maxHp += item.getEffectValue();
-                        System.out.println("🩸 You used " + item.getName() + " and increased max HP by " + item.getEffectValue() + "!");
-                        break;
-                }
-                inventory.removeConsumable(item);
-                return;
+    public int getTotalAttackPower() {
+        return strength + (mainWeapon != null ? mainWeapon.getAttackPower() : 0);
+    }
+
+    public void equipWeapon(MainWeapon weapon) {
+        this.mainWeapon = weapon;
+        if ("passive".equals(weapon.getSpecialEffectType())) {
+            switch (weapon.getSpecialEffect()) {
+                case "\uD83D\uDCAA\uD83D\uDC96 Enhances Strength and MaxHp":
+                    this.strength += weapon.getEffectValue();
+                    this.maxHp += weapon.getEffectValue();
+                    break;
+                case "\uD83D\uDCAA Enhances Strength":
+                    this.strength += weapon.getEffectValue();
+                    break;
             }
         }
-        System.out.println("❌ You don’t have that item!");
     }
 
+    public MainWeapon getEquippedWeapon() {
+        return this.mainWeapon;
+    }
+
+    public void unequipWeapon(MainWeapon weapon) {
+        if ("passive".equals(weapon.getSpecialEffectType())) {
+            switch (weapon.getSpecialEffect()) {
+                case "\uD83D\uDCAA\uD83D\uDC96 Enhances Strength and MaxHp":
+                    this.strength -= weapon.getEffectValue();
+                    this.maxHp -= weapon.getEffectValue();
+                    if (this.hp > this.maxHp) {
+                        this.hp = this.maxHp;
+                    }
+                    break;
+                case "\uD83D\uDCAA Enhances Strength":
+                    this.strength -= weapon.getEffectValue();
+                    break;
+            }
+        }
+    }
+
+    public void addItemToInventory(Item item) {
+        inventory.add(item);
+    }
+
+    public List<Item> getBoughtItems() {
+        return boughtItems;
+    }
+
+    public void takeDamage(int damage) {
+        this.hp -= damage;
+        if (this.hp < 0) {
+            this.hp = 0;
+        }
+    }
 }
